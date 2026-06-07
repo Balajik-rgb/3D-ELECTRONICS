@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>3D ELECTRONICS — Future Tech Store</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+:root {
+  --bg:#020408; --surface:#080d14;
+  --accent1:#00f5ff; --accent2:#ff2d78; --accent3:#b400ff;
+  --gold:#f0c060; --text:#e8f0ff; --muted:#4a5568;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;overflow-x:hidden;cursor:none;}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--accent1);
+  pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;
+  box-shadow:0 0 18px var(--accent1),0 0 40px var(--accent1);transition:width .2s,height .2s;}
+#cur-ring{position:fixed;width:38px;height:38px;border:1.5px solid rgba(0,245,255,.5);
+  border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);
+  transition:width .3s,height .3s,border-color .3s;}
+
+/* ── NOISE ── */
+#noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;}
+.scanline{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,rgba(0,0,0,.07) 3px,rgba(0,0,0,.07) 4px);}
+
+/* ══════════════════════════════════
+   NAV BAR
+══════════════════════════════════ */
+#navbar{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 3rem;
+  background:rgba(2,4,8,.7);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(0,245,255,.08);
+}
+.nav-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.08em;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.nav-links{display:flex;gap:2.5rem;}
+.nav-links a{
+  font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.18em;
+  color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s;
+}
+.nav-links a:hover{color:var(--accent1);}
+.nav-cta{
+  font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.15em;
+  padding:.5rem 1.4rem;border:1px solid var(--accent1);color:var(--accent1);
+  background:transparent;border-radius:30px;cursor:pointer;transition:all .3s;text-decoration:none;
+}
+.nav-cta:hover{background:var(--accent1);color:#000;box-shadow:0 0 25px var(--accent1);}
+
+/* ══════════════════════════════════
+   HERO — BG VIDEO LUXURY WATCH
+══════════════════════════════════ */
+#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;z-index:2;}
+#hero-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.5;filter:saturate(1.4)brightness(.65);}
+#hero-overlay{position:absolute;inset:0;z-index:1;
+  background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(2,4,8,.25),rgba(2,4,8,.88) 100%),
+             linear-gradient(to bottom,rgba(2,4,8,.55) 0%,transparent 25%,transparent 75%,rgba(2,4,8,1) 100%);}
+#hero-scan{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom,transparent 0%,rgba(0,245,255,.06) 48%,rgba(0,245,255,.14) 50%,rgba(0,245,255,.06) 52%,transparent 100%);
+  background-size:100% 200%;animation:scanSweep 5s linear infinite;}
+@keyframes scanSweep{0%{background-position:0 -100%;}100%{background-position:0 200%;}}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;}
+.hero-content{position:relative;z-index:4;text-align:center;padding:0 1rem;}
+.hero-eyebrow{
+  font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.38em;
+  color:var(--accent1);margin-bottom:1.2rem;
+  opacity:0;animation:fadeUp .8s .2s forwards;
+  text-shadow:0 0 20px var(--accent1);
+}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(4rem,13vw,12rem);
+  line-height:.88;letter-spacing:.02em;
+  background:linear-gradient(135deg,#fff 20%,var(--accent1) 50%,var(--accent2) 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:0;animation:fadeUp .9s .35s forwards;
+  filter:drop-shadow(0 0 50px rgba(0,245,255,.25));
+  position:relative;
+}
+/* glitch layers */
+.hero-title::before,.hero-title::after{
+  content:attr(data-text);position:absolute;inset:0;
+  background:linear-gradient(135deg,#fff 20%,var(--accent1) 50%,var(--accent2) 80%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-title::before{left:3px;clip-path:polygon(0 18%,100% 18%,100% 32%,0 32%);animation:g1 5s infinite;}
+.hero-title::after{left:-3px;clip-path:polygon(0 58%,100% 58%,100% 72%,0 72%);animation:g2 5s infinite;}
+@keyframes g1{0%,94%,100%{opacity:0;}95%{transform:translate(-4px,1px);opacity:.8;}97%{transform:translate(3px,-1px);opacity:.5;}}
+@keyframes g2{0%,90%,100%{opacity:0;}91%{transform:translate(4px,2px);opacity:.7;}93%{transform:translate(-3px,-2px);opacity:.4;}}
+.hero-sub{font-size:clamp(.9rem,2vw,1.1rem);color:rgba(232,240,255,.65);margin-top:1.4rem;
+  letter-spacing:.06em;opacity:0;animation:fadeUp .8s .65s forwards;}
+.hero-btns{display:flex;gap:1rem;justify-content:center;margin-top:2.2rem;
+  opacity:0;animation:fadeUp .8s .85s forwards;}
+.btn-primary{
+  padding:.75rem 2rem;background:var(--accent1);color:#000;
+  font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.15em;
+  border:none;border-radius:30px;cursor:pointer;transition:all .3s;text-decoration:none;text-transform:uppercase;
+  box-shadow:0 0 30px rgba(0,245,255,.4);
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(0,245,255,.6);}
+.btn-ghost{
+  padding:.75rem 2rem;background:transparent;color:var(--accent1);
+  font-family:'Space Mono',monospace;font-size:.75rem;letter-spacing:.15em;
+  border:1px solid var(--accent1);border-radius:30px;cursor:pointer;transition:all .3s;text-decoration:none;text-transform:uppercase;
+}
+.btn-ghost:hover{background:rgba(0,245,255,.08);}
+/* corner deco */
+.c-tl,.c-br{position:absolute;z-index:4;width:55px;height:55px;pointer-events:none;}
+.c-tl{top:1.5rem;left:1.5rem;border-top:1.5px solid rgba(0,245,255,.4);border-left:1.5px solid rgba(0,245,255,.4);}
+.c-br{bottom:1.5rem;right:1.5rem;border-bottom:1.5px solid rgba(0,245,255,.4);border-right:1.5px solid rgba(0,245,255,.4);}
+/* featured badge */
+.feat-badge{position:absolute;bottom:4.5rem;right:3rem;z-index:4;text-align:right;
+  opacity:0;animation:fadeUp .9s 1s forwards;}
+.feat-badge .fb-tag{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.25em;
+  color:var(--gold);display:block;margin-bottom:.25rem;text-shadow:0 0 15px var(--gold);}
+.feat-badge .fb-name{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#fff;display:block;
+  text-shadow:0 0 30px rgba(255,255,255,.3);}
+.feat-badge .fb-price{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--gold);display:block;
+  text-shadow:0 0 12px var(--gold);}
+/* scroll hint */
+.scroll-hint{position:absolute;bottom:1.8rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;z-index:4;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--muted);
+  opacity:0;animation:fadeUp .8s 1.2s forwards;}
+.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--accent1),transparent);
+  animation:spulse 2s infinite;}
+@keyframes spulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+
+/* ══════════════════════════════════
+   FULLSCREEN VIDEO SHOWCASE
+   (one product at a time, full screen)
+══════════════════════════════════ */
+#showcase{position:relative;z-index:2;}
+
+.showcase-slide{
+  position:relative;height:100vh;overflow:hidden;
+  display:flex;align-items:flex-end;
+}
+.showcase-slide video{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;z-index:0;
+  transition:transform 8s ease;
+}
+.showcase-slide:hover video{transform:scale(1.04);}
+.slide-overlay{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to right,rgba(2,4,8,.85) 0%,rgba(2,4,8,.4) 50%,transparent 100%),
+             linear-gradient(to top,rgba(2,4,8,.7) 0%,transparent 60%);
+}
+.slide-content{
+  position:relative;z-index:2;padding:4rem 5rem;max-width:560px;
+}
+.slide-num{
+  font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.3em;
+  color:var(--accent1);margin-bottom:.6rem;display:block;
+}
+.slide-cat{
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.22em;
+  text-transform:uppercase;margin-bottom:.8rem;display:block;opacity:.7;
+}
+.slide-name{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,7vw,6.5rem);
+  line-height:.92;letter-spacing:.03em;margin-bottom:1rem;
+}
+.slide-desc{font-size:.92rem;line-height:1.75;color:rgba(232,240,255,.6);margin-bottom:1.8rem;}
+.slide-price{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--gold);
+  margin-bottom:1.5rem;display:block;
+  text-shadow:0 0 20px rgba(240,192,96,.3);
+}
+.slide-actions{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn-buy{
+  padding:.7rem 2rem;background:var(--accent1);color:#000;
+  font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.15em;
+  border:none;border-radius:30px;cursor:pointer;transition:all .3s;text-decoration:none;text-transform:uppercase;
+  box-shadow:0 0 25px rgba(0,245,255,.35);
+}
+.btn-buy:hover{transform:translateY(-2px);box-shadow:0 0 45px rgba(0,245,255,.55);}
+.btn-wish{
+  padding:.7rem 1.6rem;background:transparent;
+  font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.15em;
+  border-radius:30px;cursor:pointer;transition:all .3s;text-decoration:none;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);
+}
+.btn-wish:hover{border-color:var(--accent2);color:var(--accent2);}
+
+/* rating stars */
+.slide-rating{display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem;}
+.stars{color:var(--gold);font-size:.9rem;letter-spacing:.05em;}
+.rating-num{font-family:'Space Mono',monospace;font-size:.68rem;color:rgba(232,240,255,.45);}
+
+/* slide number badge top right */
+.slide-badge{
+  position:absolute;top:3rem;right:3rem;z-index:2;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:7rem;line-height:1;
+  color:rgba(255,255,255,.04);
+  letter-spacing:.05em;
+  pointer-events:none;
+}
+
+/* progress bar between slides */
+.slide-progress{
+  position:absolute;bottom:0;left:0;right:0;z-index:3;
+  height:3px;
+  background:rgba(255,255,255,.06);
+}
+.slide-progress-fill{
+  height:100%;
+  background:linear-gradient(to right,var(--accent1),var(--accent2));
+  transition:width .3s;
+}
+
+/* ── FIXED SLIDE INDICATOR (right side) ── */
+#slide-indicator{
+  position:fixed;right:2rem;top:50%;transform:translateY(-50%);
+  z-index:400;display:flex;flex-direction:column;gap:.7rem;
+}
+.si-dot{
+  width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);
+  cursor:pointer;transition:all .35s;border:1px solid transparent;
+}
+.si-dot.active{
+  background:var(--accent1);
+  box-shadow:0 0 10px var(--accent1);
+  transform:scale(1.5);
+  border-color:rgba(0,245,255,.3);
+}
+
+/* ── FIXED LEFT PRODUCT LABEL ── */
+#prod-label{
+  position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);
+  z-index:400;pointer-events:none;
+  opacity:0;transition:opacity .4s;
+}
+#prod-label.visible{opacity:1;}
+#prod-label .pl-num{
+  font-family:'Bebas Neue',sans-serif;font-size:5.5rem;line-height:1;
+  color:rgba(255,255,255,.04);display:block;
+}
+#prod-label .pl-name{
+  font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.06em;
+  display:block;margin-top:-1.2rem;
+}
+#prod-label .pl-cat{
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;
+}
+
+/* ══════════════════════════════════
+   MARQUEE
+══════════════════════════════════ */
+.marquee-section{position:relative;z-index:2;padding:3rem 0;overflow:hidden;
+  border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);}
+.marquee-track{display:flex;white-space:nowrap;animation:mqrun 20s linear infinite;}
+.marquee-track span{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:.06em;
+  color:rgba(255,255,255,.05);margin:0 2rem;flex-shrink:0;}
+.marquee-track span.ac{color:var(--accent1);opacity:.2;}
+@keyframes mqrun{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* ══════════════════════════════════
+   FEATURES GRID
+══════════════════════════════════ */
+#features{position:relative;z-index:2;padding:7rem 0;background:#000;}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2px;}
+.feat-cell{padding:3rem 2.5rem;background:var(--surface);position:relative;overflow:hidden;transition:background .3s;}
+.feat-cell:hover{background:#0b1520;}
+.feat-cell::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,245,255,.12),transparent);opacity:0;transition:opacity .4s;}
+.feat-cell:hover::before{opacity:1;}
+.feat-icon{font-size:2.2rem;margin-bottom:1rem;display:block;}
+.feat-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:.04em;margin-bottom:.5rem;}
+.feat-desc{font-size:.83rem;line-height:1.75;color:rgba(232,240,255,.45);}
+
+/* ══════════════════════════════════
+   3D ORBIT SECTION (bonus)
+══════════════════════════════════ */
+#orbit-section{
+  position:relative;z-index:2;
+  padding:4rem 0 0;
+  text-align:center;
+  overflow:hidden;
+}
+.orbit-header{padding:5rem 2rem 4rem;}
+.orbit-header h2{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,7vw,6rem);line-height:1;
+  background:linear-gradient(135deg,var(--text) 40%,var(--accent3));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.orbit-header p{font-size:.9rem;color:rgba(232,240,255,.45);margin-top:.8rem;letter-spacing:.04em;}
+
+.orbit-scene{
+  position:relative;height:500px;
+  perspective:1000px;overflow:visible;
+}
+.orbit-ring{
+  position:absolute;left:50%;top:50%;transform-style:preserve-3d;
+  width:1px;height:1px;
+  animation:orbitSpin 18s linear infinite;
+}
+@keyframes orbitSpin{from{transform:rotateY(0deg);}to{transform:rotateY(360deg);}}
+.orbit-card{
+  position:absolute;
+  width:200px;height:280px;
+  margin-left:-100px;margin-top:-140px;
+  border-radius:16px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  background:rgba(8,13,20,.9);
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  cursor:pointer;
+  transition:box-shadow .3s;
+}
+.orbit-card:hover{box-shadow:0 20px 60px rgba(0,245,255,.2),0 0 30px rgba(0,245,255,.1);}
+.orbit-card video{width:100%;height:70%;object-fit:cover;}
+.orbit-card-info{padding:.7rem 1rem;}
+.oc-name{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--text);}
+.oc-price{font-size:.75rem;color:var(--gold);font-weight:700;}
+
+/* ══════════════════════════════════
+   FOOTER
+══════════════════════════════════ */
+#footer{
+  position:relative;z-index:2;padding:6rem 4rem 3rem;
+  background:var(--surface);
+  display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:4rem;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-brand{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:.06em;
+  background:linear-gradient(135deg,var(--accent1),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.footer-tagline{font-size:.82rem;color:var(--muted);margin-top:.5rem;line-height:1.8;max-width:320px;}
+.footer-col h4{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.25em;
+  color:var(--accent1);text-transform:uppercase;margin-bottom:1.2rem;}
+.footer-col a{display:block;color:var(--muted);text-decoration:none;font-size:.82rem;
+  margin-bottom:.6rem;transition:color .2s;letter-spacing:.03em;}
+.footer-col a:hover{color:var(--text);}
+.footer-bottom{
+  grid-column:1/-1;padding-top:2rem;border-top:1px solid rgba(255,255,255,.05);
+  display:flex;justify-content:space-between;
+  font-family:'Space Mono',monospace;font-size:.62rem;color:var(--muted);
+}
+
+/* ── UTILS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+.reveal{opacity:0;transform:translateY(35px);transition:opacity .8s,transform .8s;}
+.reveal.visible{opacity:1;transform:none;}
+.section-label{font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.3em;
+  color:var(--accent1);text-transform:uppercase;margin-bottom:.8rem;display:block;}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-ring"></div>
+<div id="noise"></div>
+<div class="scanline"></div>
+
+<!-- ── NAV ── -->
+<nav id="navbar">
+  <div class="nav-logo">3D Electronics</div>
+  <div class="nav-links">
+    <a href="#hero">Home</a>
+    <a href="#showcase">Products</a>
+    <a href="#orbit-section">Orbit</a>
+    <a href="#features">Features</a>
+    <a href="#footer">Contact</a>
+  </div>
+  <a class="nav-cta" href="#showcase">Shop Now →</a>
+</nav>
+
+<!-- ── FIXED SIDE UI ── -->
+<div id="slide-indicator"></div>
+<div id="prod-label">
+  <span class="pl-num" id="pl-num">01</span>
+  <span class="pl-name" id="pl-name">Chronos</span>
+  <span class="pl-cat" id="pl-cat" style="color:var(--gold)">LUXURY WATCH</span>
+</div>
+
+<!-- ════════════════════════════════════
+     HERO — LUXURY WATCH BACKGROUND
+════════════════════════════════════ -->
+<section id="hero">
+  <video id="hero-bg-video" src="LuxuryWatch.mp4" autoplay unmuted loop playsinline></video>
+  <div id="hero-overlay"></div>
+  <div id="hero-scan"></div>
+  <canvas id="hero-canvas"></canvas>
+  <div class="c-tl"></div>
+  <div class="c-br"></div>
+  <div class="feat-badge">
+    <span class="fb-tag">// Featured Product //</span>
+    <span class="fb-name">CHRONOS</span>
+    <span class="fb-price">from $4,999</span>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">// EST. 2026 — 3D ELECTRONICS //</p>
+    <h1 class="hero-title" data-text="3D ELECTRONICS">3D ELECTRONICS</h1>
+    <p class="hero-sub">Six flagship products. Infinite possibilities.<br>The future of technology, in your hands.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#showcase">Shop Collection</a>
+      <a class="btn-ghost" href="#orbit-section">View 3D Orbit</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL TO EXPLORE</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     FULLSCREEN PRODUCT SLIDES
+════════════════════════════════════ -->
+<section id="showcase"></section>
+
+<!-- ── MARQUEE ── -->
+<div class="marquee-section">
+  <div class="marquee-track" id="mqTrack"></div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section id="features">
+  <div class="feat-grid">
+    <div class="feat-cell reveal">
+      <span class="feat-icon">⚡</span>
+      <h3 class="feat-title">BLAZING SPEED</h3>
+      <p class="feat-desc">Next-gen processors that redefine what's possible. Every millisecond engineered.</p>
+    </div>
+    <div class="feat-cell reveal">
+      <span class="feat-icon">🔒</span>
+      <h3 class="feat-title">IRON SECURITY</h3>
+      <p class="feat-desc">Military-grade encryption built at the hardware level. Your data stays yours.</p>
+    </div>
+    <div class="feat-cell reveal">
+      <span class="feat-icon">🌐</span>
+      <h3 class="feat-title">SEAMLESS SYNC</h3>
+      <p class="feat-desc">All six devices share a unified ecosystem. Handoff. Continuity. Zero friction.</p>
+    </div>
+    <div class="feat-cell reveal">
+      <span class="feat-icon">♾️</span>
+      <h3 class="feat-title">ALL-DAY POWER</h3>
+      <p class="feat-desc">Adaptive power management that learns your habits and outlasts the day.</p>
+    </div>
+    <div class="feat-cell reveal">
+      <span class="feat-icon">🎯</span>
+      <h3 class="feat-title">PRECISION BUILD</h3>
+      <p class="feat-desc">Aircraft-grade aluminium, sapphire glass, surgical tolerances. Built to last.</p>
+    </div>
+    <div class="feat-cell reveal">
+      <span class="feat-icon">🚀</span>
+      <h3 class="feat-title">FREE DELIVERY</h3>
+      <p class="feat-desc">Worldwide delivery within 48 hours. White-glove unboxing experience included.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── 3D ORBIT ── -->
+<section id="orbit-section">
+  <div class="orbit-header reveal">
+    <span class="section-label">// 03 — 3D ORBIT VIEW</span>
+    <h2>ALL PRODUCTS.<br>ONE ORBIT.</h2>
+    <p>Watch all six products rotate in 3D space. Hover to pause.</p>
+  </div>
+  <div class="orbit-scene">
+    <div class="orbit-ring" id="orbitRing"></div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer id="footer">
+  <div>
+    <div class="footer-brand">3D Electronics</div>
+    <p class="footer-tagline">Premium technology crafted for those who demand the extraordinary. The future is already here.</p>
+  </div>
+  <div class="footer-col">
+    <h4>Products</h4>
+    <a href="#">AeroBook Laptop</a>
+    <a href="#">AirBuds Pro</a>
+    <a href="#">SoundWave Headphones</a>
+    <a href="#">iPhone Pro</a>
+    <a href="#">Chronos Watch</a>
+    <a href="#">PowerCore Bank</a>
+  </div>
+  <div class="footer-col">
+    <h4>Company</h4>
+    <a href="#">About Us</a>
+    <a href="#">Careers</a>
+    <a href="#">Press</a>
+    <a href="#">Support</a>
+    <a href="#">Privacy Policy</a>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 3D ELECTRONICS — ALL RIGHTS RESERVED — K.BALAJI</span>
+    <span>CRAFTED WITH PRECISION</span>
+  </div>
+</footer>
+
+<script>
+/* ═══════════════════════════════════════
+   PRODUCTS DATA
+═══════════════════════════════════════ */
+const PRODUCTS = [
+  {
+    name:'Chronos',cat:'LUXURY WATCH',price:'$4,999',color:'#ffa040',
+    file:'LuxuryWatch.mp4',stars:'★★★★★',reviews:'2,341',
+    desc:'Handcrafted Swiss movement meets next-gen smartwatch tech. Sapphire crystal, titanium case, 14-day battery.'
+  },
+  {
+    name:'AeroBook',cat:'LAPTOP',price:'$2,499',color:'#00f5ff',
+    file:'AeroBook.mp4',stars:'★★★★★',reviews:'5,120',
+    desc:'Ultra-thin 13" laptop with M4 Pro chip. 24hr battery, 4K OLED display, machined from a single block of aluminium.'
+  },
+  {
+    name:'iPhone Pro',cat:'SMARTPHONE',price:'$1,299',color:'#f0c060',
+    file:'iPhone.mp4',stars:'★★★★★',reviews:'18,440',
+    desc:'Triple 200MP camera system, 8K video, titanium frame. The most powerful smartphone ever made.'
+  },
+  {
+    name:'SoundWave',cat:'HEADPHONES',price:'$599',color:'#b400ff',
+    file:'Headphones.mp4',stars:'★★★★☆',reviews:'3,872',
+    desc:'Active noise cancellation with 40mm planar drivers. 60-hour battery, audiophile-grade sound signature.'
+  },
+  {
+    name:'AirBuds',cat:'EARPHONES',price:'$349',color:'#ff2d78',
+    file:'AirBuds.mp4',stars:'★★★★★',reviews:'9,650',
+    desc:'True wireless earbuds with adaptive EQ, spatial audio, and a charging case that holds 36 hours of charge.'
+  },
+  {
+    name:'PowerCore',cat:'POWER BANK',price:'$129',color:'#40ffa0',
+    file:'PowerBank.mp4',stars:'★★★★☆',reviews:'4,210',
+    desc:'26,800mAh with 140W GaN fast charging. Charges your laptop, phone, and earbuds simultaneously.'
+  },
+];
+
+/* ═══════════════════════════════════════
+   CURSOR
+═══════════════════════════════════════ */
+const cur=document.getElementById('cur');
+const curRing=document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+(function anim(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(anim);})();
+document.addEventListener('mouseover',e=>{
+  if(e.target.matches('a,button,.orbit-card,.si-dot')){
+    cur.style.width='20px';cur.style.height='20px';
+    curRing.style.width='55px';curRing.style.height='55px';
+    curRing.style.borderColor='var(--accent2)';
+  }
+},{passive:true});
+document.addEventListener('mouseout',e=>{
+  if(e.target.matches('a,button,.orbit-card,.si-dot')){
+    cur.style.width='12px';cur.style.height='12px';
+    curRing.style.width='38px';curRing.style.height='38px';
+    curRing.style.borderColor='rgba(0,245,255,.5)';
+  }
+},{passive:true});
+
+/* ═══════════════════════════════════════
+   HERO PARTICLE CANVAS
+═══════════════════════════════════════ */
+(function(){
+  const cv=document.getElementById('hero-canvas');
+  const ctx=cv.getContext('2d');
+  let W,H,pts=[];
+  const N=75,DIST=120;
+  function rsz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+  rsz();window.addEventListener('resize',rsz);
+  for(let i=0;i<N;i++)pts.push({x:Math.random()*1920,y:Math.random()*1080,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.4+.4});
+  let mX=W/2,mY=H/2;
+  window.addEventListener('mousemove',e=>{mX=e.clientX;mY=e.clientY;});
+  (function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      const dx=p.x-mX,dy=p.y-mY,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){p.x+=dx/d*1.2;p.y+=dy/d*1.2;}
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle='rgba(0,245,255,.5)';ctx.fill();
+    });
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<DIST){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle=`rgba(0,245,255,${(1-d/DIST)*.22})`;ctx.lineWidth=.7;ctx.stroke();}
+    }
+    requestAnimationFrame(draw);
+  })();
+})();
+
+/* ═══════════════════════════════════════
+   BUILD FULLSCREEN SLIDES
+═══════════════════════════════════════ */
+const showcase=document.getElementById('showcase');
+const siContainer=document.getElementById('slide-indicator');
+const plLabel=document.getElementById('prod-label');
+const plNum=document.getElementById('pl-num');
+const plName=document.getElementById('pl-name');
+const plCat=document.getElementById('pl-cat');
+
+PRODUCTS.forEach((p,i)=>{
+  // slide
+  const slide=document.createElement('div');
+  slide.className='showcase-slide';
+  slide.id='slide-'+i;
+  slide.innerHTML=`
+    <video autoplay muted loop playsinline src="${p.file}"></video>
+    <div class="slide-overlay"></div>
+    <div class="slide-badge">${String(i+1).padStart(2,'0')}</div>
+    <div class="slide-content">
+      <span class="slide-num">// ${String(i+1).padStart(2,'0')} of ${String(PRODUCTS.length).padStart(2,'0')}</span>
+      <span class="slide-cat" style="color:${p.color}">${p.cat}</span>
+      <div class="slide-name" style="color:#fff">${p.name}</div>
+      <div class="slide-rating">
+        <span class="stars" style="color:${p.color}">${p.stars}</span>
+        <span class="rating-num">(${p.reviews} reviews)</span>
+      </div>
+      <p class="slide-desc">${p.desc}</p>
+      <span class="slide-price" style="color:${p.color}">${p.price}</span>
+      <div class="slide-actions">
+        <a class="btn-buy" href="#" style="background:${p.color};box-shadow:0 0 25px ${p.color}55;">Add to Cart</a>
+        <a class="btn-wish" href="#">♡ Wishlist</a>
+      </div>
+    </div>
+    <div class="slide-progress"><div class="slide-progress-fill" style="width:${((i+1)/PRODUCTS.length)*100}%;background:linear-gradient(to right,${p.color},var(--accent2));"></div></div>
+  `;
+  showcase.appendChild(slide);
+
+  // indicator dot
+  const dot=document.createElement('div');
+  dot.className='si-dot'+(i===0?' active':'');
+  dot.title=p.name;
+  dot.addEventListener('click',()=>{
+    document.getElementById('slide-'+i).scrollIntoView({behavior:'smooth'});
+  });
+  siContainer.appendChild(dot);
+});
+
+/* ── UPDATE ACTIVE SLIDE ON SCROLL ── */
+let activeSlide=-1;
+function updateActiveSlide(){
+  const cy=window.scrollY+window.innerHeight/2;
+  PRODUCTS.forEach((_,i)=>{
+    const el=document.getElementById('slide-'+i);
+    if(!el)return;
+    const r=el.getBoundingClientRect();
+    const top=r.top+window.scrollY;
+    const bot=top+r.height;
+    if(cy>=top&&cy<bot){
+      if(activeSlide!==i){
+        activeSlide=i;
+        document.querySelectorAll('.si-dot').forEach((d,j)=>d.classList.toggle('active',j===i));
+        const p=PRODUCTS[i];
+        plNum.textContent=String(i+1).padStart(2,'0');
+        plName.textContent=p.name;plName.style.color=p.color;
+        plCat.textContent=p.cat;plCat.style.color=p.color;
+      }
+    }
+  });
+  // show/hide prod-label (only when in showcase section)
+  const sc=showcase.getBoundingClientRect();
+  if(sc.top<window.innerHeight&&sc.bottom>0){plLabel.classList.add('visible');}
+  else{plLabel.classList.remove('visible');}
+}
+window.addEventListener('scroll',updateActiveSlide,{passive:true});
+updateActiveSlide();
+
+/* ═══════════════════════════════════════
+   MARQUEE
+═══════════════════════════════════════ */
+const mq=document.getElementById('mqTrack');
+const mwords=['3D ELECTRONICS','LUXURY TECH','FUTURE NOW','PRECISION','INNOVATION','DESIGN','POWER','QUALITY'];
+let ms='';
+for(let r=0;r<4;r++) mwords.forEach((w,j)=>{
+  ms+=`<span${j%3===1?' class="ac"':''}>${w}</span><span style="color:rgba(0,245,255,.07);margin:0 1.5rem;">◆</span>`;
+});
+mq.innerHTML=ms+ms;
+
+/* ═══════════════════════════════════════
+   3D ORBIT (auto-rotate)
+═══════════════════════════════════════ */
+const orbitRing=document.getElementById('orbitRing');
+const OR=360; // px radius
+PRODUCTS.forEach((p,i)=>{
+  const theta=i*(2*Math.PI/PRODUCTS.length);
+  const x=Math.sin(theta)*OR;
+  const z=Math.cos(theta)*OR;
+  const card=document.createElement('div');
+  card.className='orbit-card';
+  card.style.cssText=`transform:translateX(${x}px) translateZ(${z}px);border-top:2px solid ${p.color}44;`;
+  card.innerHTML=`<video src="${p.file}" autoplay muted loop playsinline></video>
+    <div class="orbit-card-info">
+      <div class="oc-name" style="color:${p.color}">${p.name}</div>
+      <div class="oc-price">${p.price}</div>
+    </div>`;
+  orbitRing.appendChild(card);
+});
+// pause on hover
+orbitRing.addEventListener('mouseenter',()=>orbitRing.style.animationPlayState='paused');
+orbitRing.addEventListener('mouseleave',()=>orbitRing.style.animationPlayState='running');
+
+/* ═══════════════════════════════════════
+   REVEAL ON SCROLL
+═══════════════════════════════════════ */
+const io=new IntersectionObserver(entries=>entries.forEach(e=>{
+  if(e.isIntersecting)e.target.classList.add('visible');
+}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
